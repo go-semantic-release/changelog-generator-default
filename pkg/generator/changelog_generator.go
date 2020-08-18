@@ -10,8 +10,6 @@ import (
 	"github.com/go-semantic-release/semantic-release/v2/pkg/semrel"
 )
 
-type DefaultChangelogGenerator struct{}
-
 func trimSHA(sha string) string {
 	if len(sha) < 9 {
 		return sha
@@ -50,6 +48,22 @@ func getSortedKeys(m *map[string]string) []string {
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+var CGVERSION = "dev"
+
+type DefaultChangelogGenerator struct{}
+
+func (g *DefaultChangelogGenerator) Init(m map[string]string) error {
+	return nil
+}
+
+func (g *DefaultChangelogGenerator) Name() string {
+	return "default"
+}
+
+func (g *DefaultChangelogGenerator) Version() string {
+	return CGVERSION
 }
 
 func (*DefaultChangelogGenerator) Generate(changelogConfig *generator.ChangelogGeneratorConfig) string {
