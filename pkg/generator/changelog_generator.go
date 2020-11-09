@@ -2,7 +2,6 @@ package generator
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 	"time"
 
@@ -27,26 +26,61 @@ func formatCommit(c *semrel.Commit) string {
 }
 
 var typeToText = map[string]string{
+	"%%bc%%":   "Breaking Changes",
 	"feat":     "Feature",
 	"fix":      "Bug Fixes",
-	"perf":     "Performance Improvements",
 	"revert":   "Reverts",
+	"perf":     "Performance Improvements",
 	"docs":     "Documentation",
-	"style":    "Styles",
-	"refactor": "Code Refactoring",
 	"test":     "Tests",
+	"refactor": "Code Refactoring",
+	"style":    "Styles",
 	"chore":    "Chores",
-	"%%bc%%":   "Breaking Changes",
+	"build":    "Build",
+	"ci":       "CI",
+}
+
+var typeOrder = map[int]string{
+	0:  "%%bc%%",
+	1:  "feat",
+	2:  "fix",
+	3:  "revert",
+	4:  "perf",
+	5:  "docs",
+	6:  "test",
+	7:  "refactor",
+	8:  "style",
+	9:  "chore",
+	10: "build",
+	11: "ci",
 }
 
 func getSortedKeys(m *map[string]string) []string {
+	types := make(map[int]string, len(*m))
 	keys := make([]string, len(*m))
+
 	i := 0
 	for k := range *m {
-		keys[i] = k
+		types[i] = k
 		i++
 	}
-	sort.Strings(keys)
+
+	i = 0
+	for ki := 0; ki < len(typeOrder); ki++ {
+		for ti := range types {
+			if types[ti] == typeOrder[ki] {
+				keys[i] = types[ti]
+				delete(types, ti)
+				i++
+			}
+		}
+	}
+
+	for ti := range types {
+		keys[i] = types[ti]
+		i++
+	}
+
 	return keys
 }
 
@@ -74,7 +108,7 @@ func (*DefaultChangelogGenerator) Generate(changelogConfig *generator.ChangelogG
 			break
 		}
 		if commit.Change != nil && commit.Change.Major {
-			typeScopeMap["%%bc%%"] += fmt.Sprintf("%s\n```%s\n```\n", formatCommit(commit), strings.Join(commit.Raw[1:], "\n"))
+			typeScopeMap["%%bc%%"] += fmt.Sprintf("%s```\n%s\n```\n", formatCommit(commit), strings.Join(commit.Raw[1:], "\n"))
 			continue
 		}
 		if commit.Type == "" {

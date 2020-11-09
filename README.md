@@ -5,6 +5,24 @@
 
 The default changelog generator for [go-semantic-release](https://github.com/go-semantic-release/semantic-release).
 
+## Output of the Change Log
+
+Changelog-generator will order the types of commits in the Change Log in the following order:
+- Breaking Changes
+- Feature
+- Bug Fixes
+- Reverts
+- Performance Improvements
+- Documentation
+- Tests
+- Code Refactoring
+- Styles
+- Chores
+- Build
+- CI
+
+[Example Change Log](./examples/GENERATED_CHANGELOG.md)
+
 ## Licence
 
 The [MIT License (MIT)](http://opensource.org/licenses/MIT)
