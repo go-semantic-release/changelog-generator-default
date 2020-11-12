@@ -5,9 +5,9 @@
 
 The default changelog generator for [go-semantic-release](https://github.com/go-semantic-release/semantic-release).
 
-## Output of the Change Log
+## Output of the changelog
 
-Changelog-generator will order the types of commits in the Change Log in the following order:
+The changelog generator will order the types of commits in the changelog in the following order:
 - Breaking Changes
 - Feature
 - Bug Fixes
