@@ -21,6 +21,10 @@ The changelog generator will order the types of commits in the changelog in the 
 - Build
 - CI
 
+## Prettified changelogs
+
+In order to use prettified changelogs including a prefixed emoji, you need to provide the following config when calling semantic-relase: `--changelog-generator-opt "prettified_output=true"`. Or add the config within your `.semrelrc` file.
+
 [Example Change Log](./examples/GENERATED_CHANGELOG.md)
 
 ## Licence
