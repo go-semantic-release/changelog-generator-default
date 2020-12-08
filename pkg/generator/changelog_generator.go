@@ -27,9 +27,21 @@ func formatCommit(c *semrel.Commit) string {
 
 var CGVERSION = "dev"
 
-type DefaultChangelogGenerator struct{}
+type DefaultChangelogGenerator struct {
+	prettifyOutput bool
+}
 
 func (g *DefaultChangelogGenerator) Init(m map[string]string) error {
+	prettifyOutput := false
+
+	prettifyConfig := m["prettify"]
+
+	if prettifyConfig == "true" {
+		prettifyOutput = true
+	}
+
+	g.prettifyOutput = prettifyOutput
+
 	return nil
 }
 
@@ -41,7 +53,7 @@ func (g *DefaultChangelogGenerator) Version() string {
 	return CGVERSION
 }
 
-func (*DefaultChangelogGenerator) Generate(changelogConfig *generator.ChangelogGeneratorConfig) string {
+func (g *DefaultChangelogGenerator) Generate(changelogConfig *generator.ChangelogGeneratorConfig) string {
 	ret := fmt.Sprintf("## %s (%s)\n\n", changelogConfig.NewVersion, time.Now().UTC().Format("2006-01-02"))
 	clTypes := NewChangelogTypes()
 	for _, commit := range changelogConfig.Commits {
@@ -62,7 +74,11 @@ func (*DefaultChangelogGenerator) Generate(changelogConfig *generator.ChangelogG
 		if ct.Content == "" {
 			continue
 		}
-		ret += fmt.Sprintf("#### %s\n\n%s\n", ct.Text, ct.Content)
+		prettifyPrefix := ""
+		if g.prettifyOutput {
+			prettifyPrefix = ct.Emoji
+		}
+		ret += fmt.Sprintf("#### %s%s\n\n%s\n", prettifyPrefix, ct.Text, ct.Content)
 	}
 	return ret
 }

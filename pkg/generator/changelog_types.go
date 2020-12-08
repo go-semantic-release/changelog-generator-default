@@ -33,61 +33,61 @@ var defaultTypes = ChangelogTypes{
 	{
 		Type:  "%%bc%%",
 		Text:  "Breaking Changes",
-		Emoji: "📣",
+		Emoji: "📣 ",
 	},
 	{
 		Type:  "feat",
 		Text:  "Feature",
-		Emoji: "🎁",
+		Emoji: "🎁 ",
 	},
 	{
 		Type:  "fix",
 		Text:  "Bug Fixes",
-		Emoji: "🐞",
+		Emoji: "🐞 ",
 	},
 	{
 		Type:  "revert",
 		Text:  "Reverts",
-		Emoji: "🔙",
+		Emoji: "🔙 ",
 	},
 	{
 		Type:  "perf",
 		Text:  "Performance Improvements",
-		Emoji: "📈",
+		Emoji: "📈 ",
 	},
 	{
 		Type:  "docs",
 		Text:  "Documentation",
-		Emoji: "📄",
+		Emoji: "📄 ",
 	},
 	{
 		Type:  "test",
 		Text:  "Tests",
-		Emoji: "🔎",
+		Emoji: "🔎 ",
 	},
 	{
 		Type:  "refactor",
 		Text:  "Code Refactoring",
-		Emoji: "🔀",
+		Emoji: "🔀 ",
 	},
 	{
 		Type:  "style",
 		Text:  "Styles",
-		Emoji: "🎨",
+		Emoji: "🎨 ",
 	},
 	{
 		Type:  "chore",
 		Text:  "Chores",
-		Emoji: "🚧",
+		Emoji: "🚧 ",
 	},
 	{
 		Type:  "build",
 		Text:  "Build",
-		Emoji: "📦",
+		Emoji: "📦 ",
 	},
 	{
 		Type:  "ci",
 		Text:  "CI",
-		Emoji: "🔁",
+		Emoji: "🔁 ",
 	},
 }
