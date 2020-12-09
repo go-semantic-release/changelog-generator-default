@@ -23,7 +23,7 @@ changed ID int into UUID
 
 * commit message (43218765)
 
-#### 🔁  CI
+#### 🔁 CI
 
 * commit message (87654321)
 

@@ -28,19 +28,19 @@ func formatCommit(c *semrel.Commit) string {
 var CGVERSION = "dev"
 
 type DefaultChangelogGenerator struct {
-	prettifiedOutput bool
+	emojis bool
 }
 
 func (g *DefaultChangelogGenerator) Init(m map[string]string) error {
-	prettifiedOutput := false
+	emojis := false
 
-	prettifyConfig := m["prettified_output"]
+	emojiConfig := m["emojis"]
 
-	if prettifyConfig == "true" {
-		prettifiedOutput = true
+	if emojiConfig == "true" {
+		emojis = true
 	}
 
-	g.prettifiedOutput = prettifiedOutput
+	g.emojis = emojis
 
 	return nil
 }
@@ -74,11 +74,11 @@ func (g *DefaultChangelogGenerator) Generate(changelogConfig *generator.Changelo
 		if ct.Content == "" {
 			continue
 		}
-		prettifyPrefix := ""
-		if g.prettifiedOutput {
-			prettifyPrefix = ct.Emoji
+		emojiPrefix := ""
+		if g.emojis && ct.Emoji != "" {
+			emojiPrefix = fmt.Sprintf("%s ", ct.Emoji)
 		}
-		ret += fmt.Sprintf("#### %s%s\n\n%s\n", prettifyPrefix, ct.Text, ct.Content)
+		ret += fmt.Sprintf("#### %s%s\n\n%s\n", emojiPrefix, ct.Text, ct.Content)
 	}
 	return ret
 }
