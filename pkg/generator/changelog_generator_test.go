@@ -36,7 +36,7 @@ func TestDefaultGenerator(t *testing.T) {
 	}
 }
 
-func TestPrettifiedGenerator(t *testing.T) {
+func TestEmojiGenerator(t *testing.T) {
 	changelogConfig := &generator.ChangelogGeneratorConfig{}
 	changelogConfig.Commits = []*semrel.Commit{
 		{},
@@ -51,7 +51,7 @@ func TestPrettifiedGenerator(t *testing.T) {
 	}
 	changelogConfig.LatestRelease = &semrel.Release{SHA: "stop"}
 	changelogConfig.NewVersion = "2.0.0"
-	generator := &DefaultChangelogGenerator{prettifiedOutput: true}
+	generator := &DefaultChangelogGenerator{emojis: true}
 	changelog := generator.Generate(changelogConfig)
 	if !strings.Contains(changelog, "* **app:** commit message (12345678)") ||
 		!strings.Contains(changelog, "* commit message (abcd)") ||
