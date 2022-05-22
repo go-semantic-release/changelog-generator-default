@@ -1,6 +1,6 @@
 module github.com/go-semantic-release/changelog-generator-default
 
-go 1.17
+go 1.18
 
 require github.com/go-semantic-release/semantic-release/v2 v2.12.1
 
