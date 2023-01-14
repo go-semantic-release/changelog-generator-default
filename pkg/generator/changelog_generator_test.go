@@ -1,68 +1,125 @@
 package generator
 
 import (
-	"strings"
 	"testing"
+	"text/template"
 
 	"github.com/go-semantic-release/semantic-release/v2/pkg/generator"
 	"github.com/go-semantic-release/semantic-release/v2/pkg/semrel"
+	"github.com/stretchr/testify/require"
 )
 
+var testCommits = []*semrel.Commit{
+	{},
+	{
+		SHA: "123456789", Type: "feat", Scope: "app", Message: "commit message",
+		Annotations: map[string]string{"author_login": "test"},
+	},
+	{
+		SHA: "deadbeef", Type: "fix", Scope: "", Message: "commit message",
+		Annotations: map[string]string{"author_login": "test"},
+	},
+	{
+		SHA: "87654321", Type: "ci", Scope: "", Message: "commit message",
+		Annotations: map[string]string{"author_login": "test"},
+	},
+	{
+		SHA: "43218765", Type: "build", Scope: "", Message: "commit message",
+		Annotations: map[string]string{"author_login": "test"},
+	},
+	{
+		SHA: "12345678", Type: "yolo", Scope: "swag", Message: "commit message",
+	},
+	{
+		SHA: "12345678", Type: "chore", Scope: "", Message: "commit message",
+		Raw:         []string{"", "BREAKING CHANGE: test"},
+		Change:      &semrel.Change{Major: true},
+		Annotations: map[string]string{"author_login": "test"},
+	},
+	{
+		SHA: "12345679", Type: "chore!", Scope: "user", Message: "another commit message",
+		Raw:    []string{"another commit message", "changed ID int into UUID"},
+		Change: &semrel.Change{Major: true},
+	},
+	{
+		SHA: "stop", Type: "chore", Scope: "", Message: "not included",
+	},
+}
+
+var testChangelogConfig = &generator.ChangelogGeneratorConfig{
+	Commits:       testCommits,
+	LatestRelease: &semrel.Release{SHA: "stop"},
+	NewVersion:    "2.0.0",
+}
+
 func TestDefaultGenerator(t *testing.T) {
-	changelogConfig := &generator.ChangelogGeneratorConfig{}
-	changelogConfig.Commits = []*semrel.Commit{
-		{},
-		{SHA: "123456789", Type: "feat", Scope: "app", Message: "commit message"},
-		{SHA: "abcd", Type: "fix", Scope: "", Message: "commit message"},
-		{SHA: "87654321", Type: "ci", Scope: "", Message: "commit message"},
-		{SHA: "43218765", Type: "build", Scope: "", Message: "commit message"},
-		{SHA: "12345678", Type: "yolo", Scope: "swag", Message: "commit message"},
-		{SHA: "12345678", Type: "chore", Scope: "", Message: "commit message", Raw: []string{"", "BREAKING CHANGE: test"}, Change: &semrel.Change{Major: true}},
-		{SHA: "12345679", Type: "chore!", Scope: "user", Message: "another commit message", Raw: []string{"another commit message", "changed ID int into UUID"}, Change: &semrel.Change{Major: true}},
-		{SHA: "stop", Type: "chore", Scope: "", Message: "not included"},
-	}
-	changelogConfig.LatestRelease = &semrel.Release{SHA: "stop"}
-	changelogConfig.NewVersion = "2.0.0"
-	generator := &DefaultChangelogGenerator{}
-	changelog := generator.Generate(changelogConfig)
-	if !strings.Contains(changelog, "* **app:** commit message (12345678)") ||
-		!strings.Contains(changelog, "* commit message (abcd)") ||
-		!strings.Contains(changelog, "#### yolo") ||
-		!strings.Contains(changelog, "#### Build") ||
-		!strings.Contains(changelog, "#### CI") ||
-		!strings.Contains(changelog, "```\nBREAKING CHANGE: test\n```") ||
-		strings.Contains(changelog, "not included") {
-		t.Fail()
-	}
+	clGen := &DefaultChangelogGenerator{}
+	require.NoError(t, clGen.Init(map[string]string{}))
+	changelog := clGen.Generate(testChangelogConfig)
+
+	require.Contains(t, changelog, "* **app:** commit message (12345678)")
+	require.Contains(t, changelog, "* commit message (deadbeef)")
+	require.Contains(t, changelog, "#### yolo")
+	require.Contains(t, changelog, "#### Build")
+	require.Contains(t, changelog, "#### CI")
+	require.Contains(t, changelog, "```\nBREAKING CHANGE: test\n```")
+	require.NotContains(t, changelog, "not included")
 }
 
 func TestEmojiGenerator(t *testing.T) {
-	changelogConfig := &generator.ChangelogGeneratorConfig{}
-	changelogConfig.Commits = []*semrel.Commit{
-		{},
-		{SHA: "123456789", Type: "feat", Scope: "app", Message: "commit message"},
-		{SHA: "abcd", Type: "fix", Scope: "", Message: "commit message"},
-		{SHA: "87654321", Type: "ci", Scope: "", Message: "commit message"},
-		{SHA: "43218765", Type: "build", Scope: "", Message: "commit message"},
-		{SHA: "12345678", Type: "yolo", Scope: "swag", Message: "commit message"},
-		{SHA: "12345678", Type: "chore", Scope: "", Message: "commit message", Raw: []string{"", "BREAKING CHANGE: test"}, Change: &semrel.Change{Major: true}},
-		{SHA: "12345679", Type: "chore!", Scope: "user", Message: "another commit message", Raw: []string{"another commit message", "changed ID int into UUID"}, Change: &semrel.Change{Major: true}},
-		{SHA: "stop", Type: "chore", Scope: "", Message: "not included"},
+	clGen := &DefaultChangelogGenerator{}
+	require.NoError(t, clGen.Init(map[string]string{"emojis": "true"}))
+	changelog := clGen.Generate(testChangelogConfig)
+
+	require.Contains(t, changelog, "* **app:** commit message (12345678)")
+	require.Contains(t, changelog, "* commit message (deadbeef)")
+	require.Contains(t, changelog, "#### 🎁 Feature")
+	require.Contains(t, changelog, "#### 🐞 Bug Fixes")
+	require.Contains(t, changelog, "#### 🔁 CI")
+	require.Contains(t, changelog, "#### 📦 Build")
+	require.Contains(t, changelog, "#### 📣 Breaking Changes")
+	require.Contains(t, changelog, "#### yolo")
+	require.Contains(t, changelog, "```\nBREAKING CHANGE: test\n```")
+	require.NotContains(t, changelog, "not included")
+}
+
+func TestFormatCommit(t *testing.T) {
+	testCases := []struct {
+		tpl            string
+		commit         *semrel.Commit
+		expectedOutput string
+	}{
+		{
+			tpl:            defaultFormatCommitTemplateStr,
+			commit:         &semrel.Commit{SHA: "123456789", Type: "feat", Scope: "", Message: "commit message"},
+			expectedOutput: "* commit message (12345678)",
+		},
+		{
+			tpl:            defaultFormatCommitTemplateStr,
+			commit:         &semrel.Commit{SHA: "123", Type: "feat", Scope: "app", Message: "commit message"},
+			expectedOutput: "* **app:** commit message (123)",
+		},
+		{
+			tpl:            `* {{.SHA}} - {{.Message}} {{- with index .Annotations "author_login" }} [by @{{.}}] {{- end}}`,
+			commit:         &semrel.Commit{SHA: "deadbeef", Type: "fix", Message: "custom template", Annotations: map[string]string{"author_login": "test"}},
+			expectedOutput: "* deadbeef - custom template [by @test]",
+		},
 	}
-	changelogConfig.LatestRelease = &semrel.Release{SHA: "stop"}
-	changelogConfig.NewVersion = "2.0.0"
-	generator := &DefaultChangelogGenerator{emojis: true}
-	changelog := generator.Generate(changelogConfig)
-	if !strings.Contains(changelog, "* **app:** commit message (12345678)") ||
-		!strings.Contains(changelog, "* commit message (abcd)") ||
-		!strings.Contains(changelog, "#### 🎁 Feature") ||
-		!strings.Contains(changelog, "#### 🐞 Bug Fixes") ||
-		!strings.Contains(changelog, "#### 🔁 CI") ||
-		!strings.Contains(changelog, "#### 📦 Build") ||
-		!strings.Contains(changelog, "#### 📣 Breaking Changes") ||
-		!strings.Contains(changelog, "#### yolo") ||
-		!strings.Contains(changelog, "```\nBREAKING CHANGE: test\n```") ||
-		strings.Contains(changelog, "not included") {
-		t.Fail()
+	for _, tc := range testCases {
+		t.Run(tc.expectedOutput, func(t *testing.T) {
+			tpl := template.Must(template.New("test").Funcs(templateFuncMap).Parse(tc.tpl))
+			output := formatCommit(tpl, tc.commit)
+			require.Equal(t, tc.expectedOutput, output)
+		})
 	}
+}
+
+func TestFormatCommitWithCustomTemplate(t *testing.T) {
+	clGen := &DefaultChangelogGenerator{}
+	require.NoError(t, clGen.Init(map[string]string{
+		"format_commit_template": "* `{{ trimSHA .SHA}}` - {{.Message}} {{- with index .Annotations \"author_login\" }} [by @{{.}}] {{- end}}",
+	}))
+	changelog := clGen.Generate(testChangelogConfig)
+	require.Contains(t, changelog, "* `12345678` - commit message [by @test]")
+	require.NotContains(t, changelog, "* `deadbeef` - commit message (deadbeef) [by @test]")
 }
