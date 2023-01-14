@@ -21,7 +21,7 @@ func formatCommit(c *semrel.Commit) string {
 	if c.Scope != "" {
 		ret += fmt.Sprintf("**%s:** ", c.Scope)
 	}
-	ret += fmt.Sprintf("%s (%s)\n", c.Message, trimSHA(c.SHA))
+	ret += fmt.Sprintf("%s (%s)", c.Message, trimSHA(c.SHA))
 	return ret
 }
 
@@ -61,7 +61,7 @@ func (g *DefaultChangelogGenerator) Generate(changelogConfig *generator.Changelo
 			break
 		}
 		if commit.Change != nil && commit.Change.Major {
-			bc := fmt.Sprintf("%s```\n%s\n```\n", formatCommit(commit), strings.Join(commit.Raw[1:], "\n"))
+			bc := fmt.Sprintf("%s\n```\n%s\n```", formatCommit(commit), strings.Join(commit.Raw[1:], "\n"))
 			clTypes.AppendContent("%%bc%%", bc)
 			continue
 		}

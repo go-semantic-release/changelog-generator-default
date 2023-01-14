@@ -18,14 +18,14 @@ func NewChangelogTypes() ChangelogTypes {
 func (ct *ChangelogTypes) AppendContent(cType, content string) {
 	for i, cct := range *ct {
 		if cct.Type == cType {
-			(*ct)[i].Content += content
+			(*ct)[i].Content += content + "\n"
 			return
 		}
 	}
 	*ct = append(*ct, ChangelogType{
 		Type:    cType,
 		Text:    cType,
-		Content: content,
+		Content: content + "\n",
 	})
 }
 
