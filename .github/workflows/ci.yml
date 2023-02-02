@@ -39,7 +39,14 @@ jobs:
           go-version: 1.19
       - run: ./scripts/build-local.sh
       - uses: go-semantic-release/action@v1
+        id: semrel
         with:
           hooks: goreleaser
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          curl -SL https://get-release.xyz/go-semantic-release/plugin-registry/linux/amd64 -o ./plugin-registry-updater && chmod +x ./plugin-registry-updater
+          ./plugin-registry-updater -p changelog-generator-default -v ${{ steps.semrel.outputs.version }}
+        env:
+          PLUGIN_REGISTRY_ADMIN_ACCESS_TOKEN: ${{ secrets.PLUGIN_REGISTRY_ADMIN_ACCESS_TOKEN }}
+        if: steps.semrel.outputs.version != ''
