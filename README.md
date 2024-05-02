@@ -55,7 +55,7 @@ Additionally, the following functions are available:
 | Template                                                                                                                                       | Example Output                                             |
 |------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------|
 | `* {{with .Scope -}} **{{.}}:** {{end}} {{- .Message}} ({{trimSHA .SHA}})`                                                                     | `* **app:** commit message (12345678)`                     |
-| `* {{with .Scope -}} **{{.}}:** {{end}} {{- .Message}} ({{trimSHA .SHA}}) {{- with index .Annotations "author_login" }} - by @{{.}} {{- end}}` | `* **app:** commit message (12345678) - by @commit-author` |
+| `* {{with .Scope -}} **{{.}}:** {{end}} {{- .Message}} ({{trimSHA .SHA}}) {{- with index .Annotations."author_login" }} - by @{{.}} {{- end}}` | `* **app:** commit message (12345678) - by @commit-author` |
 
 
 ## Licence
