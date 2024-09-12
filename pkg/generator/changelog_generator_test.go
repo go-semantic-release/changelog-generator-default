@@ -140,6 +140,7 @@ func TestFormatCommitWithCustomTypes(t *testing.T) {
 	defer os.Remove(typesFile.Name())
 	err = json.NewEncoder(typesFile).Encode(myTypes)
 	require.NoError(t, err)
+	typesFile.Close()
 
 	clGen := &DefaultChangelogGenerator{}
 	require.NoError(t, clGen.Init(map[string]string{"types_path": typesFile.Name()}))
