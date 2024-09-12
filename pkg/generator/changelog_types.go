@@ -9,9 +9,13 @@ type ChangelogType struct {
 
 type ChangelogTypes []ChangelogType
 
-func NewChangelogTypes() ChangelogTypes {
-	ret := make(ChangelogTypes, len(defaultTypes))
-	copy(ret, defaultTypes)
+func NewChangelogTypes(overrideTypes *ChangelogTypes) ChangelogTypes {
+	src := &defaultTypes
+	if overrideTypes != nil {
+		src = overrideTypes
+	}
+	ret := make(ChangelogTypes, len(*src))
+	copy(ret, *src)
 	return ret
 }
 

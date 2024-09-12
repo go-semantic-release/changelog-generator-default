@@ -1,6 +1,8 @@
 package generator
 
 import (
+	"encoding/json"
+	"os"
 	"testing"
 	"text/template"
 
@@ -122,4 +124,27 @@ func TestFormatCommitWithCustomTemplate(t *testing.T) {
 	changelog := clGen.Generate(testChangelogConfig)
 	require.Contains(t, changelog, "* `12345678` - commit message [by @test]")
 	require.NotContains(t, changelog, "* `deadbeef` - commit message (deadbeef) [by @test]")
+}
+
+func TestFormatCommitWithCustomTypes(t *testing.T) {
+	myTypes := make(ChangelogTypes, len(defaultTypes))
+	copy(myTypes, defaultTypes)
+	for ix, clTy := range myTypes {
+		if clTy.Type == "feat" {
+			myTypes[ix].Text = "New Features"
+			break
+		}
+	}
+	typesFile, err := os.CreateTemp("", "changelog_types_*.json")
+	require.NoError(t, err)
+	defer os.Remove(typesFile.Name())
+	err = json.NewEncoder(typesFile).Encode(myTypes)
+	require.NoError(t, err)
+	typesFile.Close()
+
+	clGen := &DefaultChangelogGenerator{}
+	require.NoError(t, clGen.Init(map[string]string{"types_path": typesFile.Name()}))
+	changelog := clGen.Generate(testChangelogConfig)
+	require.Contains(t, changelog, "#### New Features")
+	require.NotContains(t, changelog, "#### Feature")
 }
