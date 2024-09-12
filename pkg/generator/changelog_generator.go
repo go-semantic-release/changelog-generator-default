@@ -2,7 +2,9 @@ package generator
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	"text/template"
 	"time"
@@ -37,6 +39,7 @@ var CGVERSION = "dev"
 
 type DefaultChangelogGenerator struct {
 	emojis          bool
+	changelogTypes  *ChangelogTypes
 	formatCommitTpl *template.Template
 }
 
@@ -61,6 +64,19 @@ func (g *DefaultChangelogGenerator) Init(m map[string]string) error {
 	}
 	g.formatCommitTpl = parsedTemplate
 
+	if typesPath, ok := m["types_path"]; ok {
+		f, err := os.Open(typesPath)
+		if err != nil {
+			return fmt.Errorf("failed to open types_path: %v", err)
+		}
+		defer f.Close()
+		var changelogTypes ChangelogTypes
+		if err := json.NewDecoder(f).Decode(&changelogTypes); err != nil {
+			return fmt.Errorf("error parsing %s: %v", typesPath, err)
+		}
+		g.changelogTypes = &changelogTypes
+	}
+
 	return nil
 }
 
@@ -74,7 +90,7 @@ func (g *DefaultChangelogGenerator) Version() string {
 
 func (g *DefaultChangelogGenerator) Generate(changelogConfig *generator.ChangelogGeneratorConfig) string {
 	ret := fmt.Sprintf("## %s (%s)\n\n", changelogConfig.NewVersion, time.Now().UTC().Format("2006-01-02"))
-	clTypes := NewChangelogTypes()
+	clTypes := NewChangelogTypes(g.changelogTypes)
 	for _, commit := range changelogConfig.Commits {
 		if changelogConfig.LatestRelease.SHA == commit.SHA {
 			break
